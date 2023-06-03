@@ -1,15 +1,19 @@
 # travel_prediction
 
 201935082 Woo Taegyeong
+
 git : wootaegyeoung
 
 201935094 Lee layeon
+
 git : llayeon
 
 202135539 Park jiyoung
+
 git : JI YOUNG
 
 202135586 Choi sumi
+
 git : Br2ath
 
 
