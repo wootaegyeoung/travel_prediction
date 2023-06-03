@@ -11,14 +11,231 @@ import warnings
 warnings.filterwarnings(action='ignore')
 
 # Load flight and hotel data
-flight = pd.read_csv("/content/flights.csv")
-hotel = pd.read_csv("/content/hotels.csv")
+flight = pd.read_csv("C:\dataset_TermP\\flights.csv")
+hotel = pd.read_csv("C:\dataset_TermP\hotels.csv")
 
 # Set up the inputs
 day = 5
 total_price = 2000
 location = 'Brasilia (DF)'
 location = np.array(location).reshape(-1, 1)
+
+# create dirty data
+# make new samples
+dirty_from1 = pd.DataFrame({'travelCode': [135800],
+                           'userCode': [1324],
+                           'from': ['-'],
+                           'to': ['Salvador (BH)'],
+                           'flightType': ['economic'],
+                           'price': [600.38],
+                           'time': [2.01],
+                           'distance': [612.0],
+                           'agency': ['CloudFy'],
+                           'date': ['07/16/2020']})
+
+dirty_from2 = pd.DataFrame({'travelCode': [135777],
+                           'userCode': [1324],
+                           'from': [np.nan],
+                           'to': ['Florianopolis (SC)'],
+                           'flightType': ['premium'],
+                           'price': [588.08],
+                           'time': [1.52],
+                           'distance': [577.0],
+                           'agency': ['FlyingDrops'],
+                           'date': ['08/16/2020']})
+
+dirty_to1 = pd.DataFrame({'travelCode': [135301],
+                           'userCode': [1331],
+                           'from': ['Salvador (BH)'],
+                           'to': ['??'],
+                           'flightType': ['firstClass'],
+                           'price': [600.38],
+                           'time': [5.5],
+                           'distance': [4000.0],
+                           'agency': ['FlyingDrops'],
+                           'date': ['12/10/2021']})
+
+dirty_to2 = pd.DataFrame({'travelCode': [135330],
+                           'userCode': [1333],
+                           'from': ['Brasilia (DF)'],
+                           'to': [np.nan],
+                           'flightType': ['premium'],
+                           'price': [1385.49],
+                           'time': [1.84],
+                           'distance': [709.37],
+                           'agency': ['Rainbow'],
+                           'date': ['07/16/2020']})
+
+dirty_price1 = pd.DataFrame({'travelCode': [135330],
+                           'userCode': [1333],
+                           'from': ['Brasilia (DF)'],
+                           'to': ['Florianopolis (SC)'],
+                           'flightType': ['economic'],
+                           'price': [np.nan],
+                           'time': [2.14],
+                           'distance': [609.37],
+                           'agency': ['Rainbow'],
+                           'date': ['05/16/2020']})
+
+dirty_price2 = pd.DataFrame({'travelCode': [135331],
+                           'userCode': [1333],
+                           'from': ['Brasilia (DF)'],
+                           'to': ['Florianopolis (SC)'],
+                           'flightType': ['economic'],
+                           'price': [-130.22],
+                           'time': [2.14],
+                           'distance': [609.37],
+                           'agency': ['Rainbow'],
+                           'date': ['07/15/2022']})
+
+dirty_price3 = pd.DataFrame({'travelCode': [135331],
+                           'userCode': [1333],
+                           'from': ['Brasilia (DF)'],
+                           'to': ['Florianopolis (SC)'],
+                           'flightType': ['economic'],
+                           'price': [np.nan],
+                           'time': [2.14],
+                           'distance': [609.37],
+                           'agency': ['Rainbow'],
+                           'date': ['07/15/2022']})
+
+dirty_distance1 = pd.DataFrame({'travelCode': [135337],
+                           'userCode': [1323],
+                           'from': ['Florianopolis (SC)'],
+                           'to': ['Recife (PE)'],
+                           'flightType': ['economic'],
+                           'price': [640.22],
+                           'time': [2.14],
+                           'distance': [np.nan],
+                           'agency': ['FlyingDrops'],
+                           'date': ['07/16/2021']})
+
+dirty_distance2 = pd.DataFrame({'travelCode': [135337],
+                           'userCode': [1323],
+                           'from': ['Florianopolis (SC)'],
+                           'to': ['Recife (PE)'],
+                           'flightType': ['economic'],
+                           'price': [461.02],
+                           'time': [2.14],
+                           'distance': [-0.1],
+                           'agency': ['FlyingDrops'],
+                           'date': ['01/1/2020']})
+
+dirty_distance3 = pd.DataFrame({'travelCode': [135338],
+                           'userCode': [1324],
+                           'from': ['Aracaju (SE)'],
+                           'to': ['Florianopolis (SC)'],
+                           'flightType': ['economic'],
+                           'price': [777.82],
+                           'time': [2.14],
+                           'distance': [np.nan],
+                           'agency': ['FlyingDrops'],
+                           'date': ['08/12/2020']})
+
+# insert dirty datas into the original dataset
+flight = pd.concat([flight, dirty_from1],ignore_index=True)
+flight = pd.concat([flight, dirty_from2],ignore_index=True)
+flight = pd.concat([flight, dirty_to1],ignore_index=True)
+flight = pd.concat([flight, dirty_to2],ignore_index=True)
+flight = pd.concat([flight, dirty_price1],ignore_index=True)
+flight = pd.concat([flight, dirty_price2],ignore_index=True)
+flight = pd.concat([flight, dirty_price3],ignore_index=True)
+flight = pd.concat([flight, dirty_distance1],ignore_index=True)
+flight = pd.concat([flight, dirty_distance2],ignore_index=True)
+flight = pd.concat([flight, dirty_distance3],ignore_index=True)
+print(flight.info())
+
+#전처리
+print(flight.isnull().sum())
+print()
+
+# Checking for garbage values in 'from' and 'to' columns
+garbage_from = flight[flight['from'].isin(['-', '??',np.nan])]
+garbage_to = flight[flight['to'].isin(['-', '??',np.nan])]
+
+# Printing the rows with garbage values
+print("Garbage values in 'from' column:")
+print(garbage_from)
+
+print("\nGarbage values in 'to' column:")
+print(garbage_to)
+
+# Removing rows with garbage values in 'from' and 'to' columns
+flight = flight[~flight.index.isin(garbage_from.index)]
+flight = flight[~flight.index.isin(garbage_to.index)]
+
+# Resetting the index
+flight.reset_index(drop=True, inplace=True)
+print('after delete')
+print(flight.isnull().sum())
+
+# Checking for garbage values in 'price' column
+garbage_price = flight[flight['price'] <= 0]
+
+# Printing the rows with garbage values
+print("Garbage values in 'price' column:")
+print(garbage_price)
+
+
+# Calculate the mean of 'price' excluding null and negative values
+mean_price = flight['price'][flight['price'] > 0].mean()
+print('mean price')
+print(mean_price)
+# Fill null and negative values with the mean price
+flight['price'].fillna(mean_price, inplace=True)
+flight.loc[flight['price'] <= 0, 'price'] = mean_price
+
+# Checking for garbage values in 'distance' column
+garbage_price = flight[flight['distance'] <= 0]
+
+# Printing the rows with garbage values
+print("Garbage values in 'price' column:")
+print(garbage_price)
+
+
+# Calculate the mean of 'price' excluding null and negative values
+distance_mean_price = flight['distance'][flight['distance'] > 0].mean()
+print('distance_mean_price price')
+print(distance_mean_price)
+# Fill null and negative values with the mean price
+flight['distance'].fillna(distance_mean_price, inplace=True)
+flight.loc[flight['price'] <= 0, 'price'] = distance_mean_price
+
+print('final')
+print(flight.isnull().sum())
+print(flight.info())
+
+
+#----------------------------------------------------------------------------------
+#put dirty datas into hotels dataset 
+
+# outlier - hotels dataset에는 적용되는 outlier없음
+# def remove_outliers(data, column):
+#     # calculate outlier
+#     Q1 = data[column].quantile(0.25)
+#     Q3 = data[column].quantile(0.75)
+#     IQR = Q3 - Q1
+#     lower_fence = Q1 - 1.5 * IQR
+#     print(lower_fence)
+#     upper_fence = Q3 + 1.5 * IQR
+#     print(upper_fence)
+
+#     # remove outliers
+#     filtered_data = data[(data[column] >= lower_fence) & (data[column] <= upper_fence)]
+#     return filtered_data
+
+# remove 'price' column's outliers
+# hotel = remove_outliers(hotel, 'total')
+
+#redefine outlier 
+lower_fence = 10
+upper_fence = 1250
+print(hotel.info())
+
+#remove outlier
+hotel = hotel[(hotel['total'] >= lower_fence) & (hotel['total'] <= upper_fence)]
+print(hotel.info())
+
 
 # Preprocessing
 # Select relevant columns from flight and hotel data
