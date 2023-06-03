@@ -1,6 +1,7 @@
 # travel_prediction
 
 201935082 Woo Taegyeong
+git: wootaegyeoung
 
 201935094 Lee layeon
 
