@@ -8,15 +8,15 @@ git : wootaegyeoung
 
 git : llayeon
 
-202135539 Park jiyoung
+### 202135539 Park jiyoung
 
 git : JI YOUNG
 
-202135586 Choi sumi
+### 202135586 Choi sumi
 
 git : Br2ath
 
-
+## procedure
 1. Import the required libraries.
 2. Load flight and hotel data.
 3. Set the input variables (days, total price, location).
