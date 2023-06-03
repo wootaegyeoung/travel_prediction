@@ -1,9 +1,12 @@
 # travel_prediction
 
-201935082 Woo Taegyeong\n
-201935094 Lee layeon\n
-202135539 Park jiyoung\n
-202135586 Choi sumi\n
+201935082 Woo Taegyeong
+
+201935094 Lee layeon
+
+202135539 Park jiyoung
+
+202135586 Choi sumi
 
 
 reference for dataset
