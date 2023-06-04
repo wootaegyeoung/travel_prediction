@@ -10,7 +10,7 @@ git : llayeon
 
 ### 202135539 Park jiyoung
 
-git : JI YOUNG
+git : ziiyouth
 
 ### 202135586 Choi sumi
 
