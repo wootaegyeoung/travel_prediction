@@ -297,6 +297,10 @@ new_data_first['travel_day'] = round(day - new_data_first['time'] * 2)
 new_data_premium['travel_day'] = -1
 new_data_premium['travel_day'] = round(day - new_data_premium['time'] * 2)
 
+flight_economic = flight[flight['flightType'] == 0]
+flight_first = flight[flight['flightType'] == 1]
+flight_premium = flight[flight['flightType'] == 2]
+
 total_MSE = 0
 total_MAE = 0
 k = 5 # K-fold time
