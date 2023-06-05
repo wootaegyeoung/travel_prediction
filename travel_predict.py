@@ -7,12 +7,13 @@ from sklearn.preprocessing import LabelEncoder, MinMaxScaler, StandardScaler
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import KFold
 import warnings
 warnings.filterwarnings(action='ignore')
 
 # Load flight and hotel data
-flight = pd.read_csv("C:\dataset_TermP\\flights.csv")
-hotel = pd.read_csv("C:\dataset_TermP\hotels.csv")
+flight = pd.read_csv("/content/flights.csv")
+hotel = pd.read_csv("/content/hotels.csv")
 
 # Set up the inputs
 day = 5
@@ -298,85 +299,121 @@ new_data_premium['travel_day'] = round(day - new_data_premium['time'] * 2)
 
 total_MSE = 0
 total_MAE = 0
-
+k = 5 # K-fold time
+kf = KFold(n_splits=k, shuffle=True)
 # Perform linear regression for each flight type (economic, first class, premium)
 
 # ----------------------------------------economic
-flight_economic = flight[flight['flightType'] == 0]
-flight_first = flight[flight['flightType'] == 1]
-flight_premium = flight[flight['flightType'] == 2]
+# K-fold- Economic Flights
+flight_x = np.array(flight_economic['date']).reshape(-1, 1)
+flight_y = np.array(flight_economic['new_price'])
 
-flight_x_train, flight_x_test, flight_y_train, flight_y_test = train_test_split(
-    flight_economic['date'],
-    flight_economic['new_price'],
-    test_size=0.3,
-    random_state=20
-)
+mse_scores = []
+mae_scores = []
+models_economic = []
 
-flight_x_train = np.array(flight_x_train).reshape(-1, 1)
-flight_y_train = np.array(flight_y_train)
-LR_flight_economic = LinearRegression().fit(flight_x_train, flight_y_train)
+for train_index, test_index in kf.split(flight_x):
+    # Data Segmentation
+    flight_x_train, flight_x_test = flight_x[train_index], flight_x[test_index]
+    flight_y_train, flight_y_test = flight_y[train_index], flight_y[test_index]
+    
+    # Model initialization and learning
+    LR_flight_economic = LinearRegression().fit(flight_x_train, flight_y_train)
+    
+    # Forecast and performance assessment
+    y_pred = LR_flight_economic.predict(flight_x_test)
+    mse = mean_squared_error(flight_y_test, y_pred)
+    mae = mean_absolute_error(flight_y_test, y_pred)
+    
+    mse_scores.append(mse)
+    mae_scores.append(mae)
+    models_economic.append(LR_flight_economic)
 
-flight_x_test = np.array(flight_x_test).reshape(-1, 1)
-flight_y_test = np.array(flight_y_test)
+# K-fold Cross-validation result output
+print("Economic Flights - K-fold Cross-validation MSE:", np.min(mse_scores))
+print("Economic Flights - K-fold Cross-validation MAE:", np.min(mae_scores))
 
-# Calculate MSE and MAE for the linear regression model
-mse = mean_squared_error(flight_y_test, LR_flight_economic.predict(flight_x_test))
-total_MSE += mse
-mae = mean_absolute_error(flight_y_test, LR_flight_economic.predict(flight_x_test))
-total_MAE += mae
+# Choose the best performing model
+best_model_economic = models_economic[np.argmin(mse_scores)]
 
 # Predict flight price for the given day
-flight_economic['predict_flight_price'] = LR_flight_economic.predict(today) * flight_economic['distance']
+flight_economic['predict_flight_price'] = best_model_economic.predict(today) * flight_economic['distance']
 
 # Repeat the same steps for first class and premium flights
 # -------------------------------------------first
-flight_x_train, flight_x_test, flight_y_train, flight_y_test = train_test_split(
-    flight_first['date'],
-    flight_first['new_price'],
-    test_size=0.3,
-    random_state=20
-)
+flight_x = np.array(flight_first['date']).reshape(-1, 1)
+flight_y = np.array(flight_first['new_price'])
 
-flight_x_train = np.array(flight_x_train).reshape(-1, 1)
-flight_y_train = np.array(flight_y_train)
-LR_flight_first = LinearRegression().fit(flight_x_train, flight_y_train)
+mse_scores = []
+mae_scores = []
+models_first = []
 
-flight_x_test = np.array(flight_x_test).reshape(-1, 1)
-flight_y_test = np.array(flight_y_test)
+for train_index, test_index in kf.split(flight_x):
+    # Data Segmentation
+    flight_x_train, flight_x_test = flight_x[train_index], flight_x[test_index]
+    flight_y_train, flight_y_test = flight_y[train_index], flight_y[test_index]
+    
+    # Model initialization and learning
+    LR_flight_first = LinearRegression().fit(flight_x_train, flight_y_train)
+    
+    # Forecast and performance assessment
+    y_pred = LR_flight_first.predict(flight_x_test)
+    mse = mean_squared_error(flight_y_test, y_pred)
+    mae = mean_absolute_error(flight_y_test, y_pred)
+    
+    mse_scores.append(mse)
+    mae_scores.append(mae)
+    models_first.append(LR_flight_first)
 
-# Calculate MSE and MAE for the linear regression model
-mse = mean_squared_error(flight_y_test, LR_flight_first.predict(flight_x_test))
-total_MSE += mse
-mae = mean_absolute_error(flight_y_test, LR_flight_first.predict(flight_x_test))
-total_MAE += mae
+# K-fold Cross-validation result output
+print("First Class Flights - K-fold Cross-validation MSE:", np.min(mse_scores))
+print("First Class Flights - K-fold Cross-validation MAE:", np.min(mae_scores))
+
+# Choose the best performing model
+best_model_first = models_first[np.argmin(mse_scores)]
 
 # Predict flight price for the given day
-flight_first['predict_flight_price'] = LR_flight_first.predict(today) * flight_first['distance']
+flight_first['predict_flight_price'] = best_model_first.predict(today) * flight_first['distance']
 
 # -------------------------------------------premium
-flight_x_train, flight_x_test, flight_y_train, flight_y_test = train_test_split(
-    flight_premium['date'],
-    flight_premium['new_price'],
-    test_size=0.3,
-    random_state=20
-)
+flight_x = np.array(flight_premium['date']).reshape(-1, 1)
+flight_y = np.array(flight_premium['new_price'])
 
-flight_x_train = np.array(flight_x_train).reshape(-1, 1)
-flight_y_train = np.array(flight_y_train)
-LR_flight_premium = LinearRegression().fit(flight_x_train, flight_y_train)
+mse_scores = []
+mae_scores = []
+models_premium = []
 
-flight_x_test = np.array(flight_x_test).reshape(-1, 1)
-flight_y_test = np.array(flight_y_test)
+for train_index, test_index in kf.split(flight_x):
+    # Data Segmentation
+    flight_x_train, flight_x_test = flight_x[train_index], flight_x[test_index]
+    flight_y_train, flight_y_test = flight_y[train_index], flight_y[test_index]
+    
+    # Model initialization and learning
+    LR_flight_premium = LinearRegression().fit(flight_x_train, flight_y_train)
+    
+    # Forecast and performance assessment
+    y_pred = LR_flight_premium.predict(flight_x_test)
+    mse = mean_squared_error(flight_y_test, y_pred)
+    mae = mean_absolute_error(flight_y_test, y_pred)
+    
+    mse_scores.append(mse)
+    mae_scores.append(mae)
+    models_premium.append(LR_flight_premium)
 
-# Calculate MSE and MAE for the linear regression model
-mse = mean_squared_error(flight_y_test, LR_flight_premium.predict(flight_x_test))
-total_MSE += mse
-mae = mean_absolute_error(flight_y_test, LR_flight_premium.predict(flight_x_test))
-total_MAE += mae
+# K-fold Cross-validation result output
+print("Premium Flights - K-fold Cross-validation MSE:", np.min(mse_scores))
+print("Premium Flights - K-fold Cross-validation MAE:", np.min(mae_scores))
+
+# Choose the best performing model
+best_model_premium = models_premium[np.argmin(mse_scores)]
 
 # Predict flight price for the given day
-flight_premium['predict_flight_price'] = LR_flight_premium.predict(today) * flight_premium['distance']
+flight_premium['predict_flight_price'] = best_model_premium.predict(today) * flight_premium['distance']
+
+
+
+
+
 
 # ------------------------------------------
 
@@ -415,8 +452,6 @@ score = tree.score(x_test, y_test)
 
 
 # --------------------------print step
-print("MSE for Linear Regression : ", total_MSE / 3)
-print("MAE for Linear Regression : ", total_MAE / 3)
 print("Decision Tree Accuracy: ", score)
 
 # Visualize the decision tree
